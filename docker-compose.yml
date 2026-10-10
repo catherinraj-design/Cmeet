@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/cmeet
+      - SECRET_KEY=school-erp-super-secret-key-change-in-production-32bytes-min
+      - LIVEKIT_URL=https://cmeet-test.livekit.cloud
+      - LIVEKIT_API_KEY=devkey
+      - LIVEKIT_API_SECRET=cmeet_dev_livekit_secret_key_minimum_32_characters
+      - LIVEKIT_WEBHOOK_SECRET=cmeet_dev_livekit_secret_key_minimum_32_characters
+    depends_on:
+      - db
+      - redis
+
+  web:
+    build:
+      context: ./apps/admin-web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=cmeet
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
