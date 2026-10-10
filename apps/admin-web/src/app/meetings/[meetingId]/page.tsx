@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, AlertCircle, ShieldCheck, CheckCircle2, Users, Clock } from "lucide-react";
-import { meetingsApi } from "../../../lib/meetings-api";
+import { meetingsApi, getAuthToken } from "../../../lib/meetings-api";
 import { MeetingDetail, MeetingJoinResponse, AttendanceSummary } from "../../../types/meeting";
 import { MeetingLobby } from "../../../components/meetings/MeetingLobby";
 import { VideoRoom } from "../../../components/meetings/VideoRoom";
@@ -29,6 +29,9 @@ export default function MeetingRoomPage() {
       try {
         setLoading(true);
         setError(null);
+        if (!getAuthToken()) {
+          await meetingsApi.login("teacher@greenwood.edu", "password123");
+        }
         const data = await meetingsApi.getMeeting(meetingId);
         setMeeting(data);
 
